@@ -1,42 +1,37 @@
-# Steam Button Template (Millennium)
+# Profile Button Config (Millennium)
 
 A template for [Millennium](https://steambrew.app/) plugins that inject a single button into
 Steam community profile pages. The button links to a URL built from the viewed profile's
 SteamID64 (e.g. `https://example.com/profile/{steamId64}`).
 
-Everything that makes a button unique — its text, color, icon, target URL, and the plugin's
-name — lives in **one file**: [config/plugin.config.ts](config/plugin.config.ts). Edit that file,
-build, and you have a new plugin.
-
-## Make your own button
-
-Open [config/plugin.config.ts](config/plugin.config.ts) and edit:
-
-```ts
-export const pluginConfig: PluginConfig = {
-	name: 'steam-button-template',        // plugin id (folder-safe, lowercase-dashes)
-	title: 'Steam Button Template',       // display name in the plugin manager
-	description: '...',                   // plugin manager description
-	logPrefix: '[SteamButton]',           // console log prefix
-
-	label: 'EXAMPLE',                     // main button text
-	accent: '.IO',                        // colored suffix (optional, can be '')
-	brandColor: '#4f9dde',                // accent + icon color
-	brandColorHover: '#7bb8e8',           // accent + icon color on hover
-	iconSvg: '<circle .../>...',          // inner SVG markup, drawn in a 0 0 24 24 viewBox
-
-	urlTemplate: 'https://example.com/profile/{steamId64}',  // {steamId64} is replaced
-	openExternalDefault: true,            // open in system browser by default
-};
-```
-
-`name`, `title`, and `description` are pushed into `plugin.json` and `package.json`
-automatically by `scripts/sync-manifest.ts`, which runs before every build. The config is the
-single source of truth.
-
 ## Prerequisites
 
 - **[Millennium](https://steambrew.app/)** installed and configured
+
+
+
+## Example Setup
+
+<video controls src="video/conf.mp4" title="Title"></video>
+
+# 🚀 Installation Guide
+
+## Method 1: Millennium Plugin Installer (Recommended)
+
+1. **Copy Plugin ID**
+
+    Copy the following Plugin ID
+
+2. **Install via Millennium**
+    - Open Steam with Millennium installed
+    - Go to **Millennium** → **Plugins**
+    - Click on the **Install a plugin**
+    - Paste the Plugin ID into the installer
+    - Click **Install**
+    - Restart Steam when prompted
+
+
+## Method 2: Build from Source
 
 ## Build & install
 
@@ -49,13 +44,13 @@ Then copy the plugin into the Millennium plugins directory (folder name = your `
 
 ```bash
 # Windows
-xcopy /E /I . "C:\Program Files (x86)\Steam\millennium\plugins\steam-button-template"
+xcopy /E /I . "C:\Program Files (x86)\Steam\millennium\plugins\profile-button-config"
 
 # Linux
-cp -r . ~/.local/share/millennium/plugins/steam-button-template
+cp -r . ~/.local/share/millennium/plugins/profile-button-config
 
 # macOS
-cp -r . ~/Library/Application\ Support/millennium/plugins/steam-button-template
+cp -r . ~/Library/Application\ Support/millennium/plugins/profile-button-config
 ```
 
 Restart Steam, enable the plugin under **Millennium → Plugins**, and restart once more.
@@ -86,8 +81,7 @@ The button is injected by two paths that share the same vanilla-DOM function
   reach it.
 
 Both paths read settings from a small Lua backend ([backend/main.lua](backend/main.lua)) and
-de-dup against each other, so only one button ever appears. See
-[CLAUDE.md](CLAUDE.md) for the full architecture.
+de-dup against each other, so only one button ever appears.
 
 ## Links
 

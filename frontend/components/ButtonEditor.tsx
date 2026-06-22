@@ -11,7 +11,6 @@ const pickButton = (c: ButtonOverrides): ButtonOverrides => ({
 	urlTemplate: c.urlTemplate,
 });
 
-/** Keys whose form value differs from the static default; undefined if none differ. */
 const computeOverride = (form: ButtonOverrides): Partial<ButtonOverrides> | undefined => {
 	const diff: Partial<ButtonOverrides> = {};
 	for (const k of BUTTON_OVERRIDE_KEYS) {

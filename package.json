@@ -24,7 +24,7 @@
     "typescript": "^5.9.3"
   },
   "type": "module",
-  "name": "steam-button-template",
+  "name": "profile-button-config",
   "version": "1.0.0",
   "description": "A Millennium plugin that adds a button to Steam community profile pages.",
   "main": "./frontend/index.tsx",

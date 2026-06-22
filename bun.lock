@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "steam-button-template",
+      "name": "profile-button-config",
       "dependencies": {
         "@steambrew/client": "^5.8.5",
         "@steambrew/webkit": "^5.8.4",

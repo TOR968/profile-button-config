@@ -15,10 +15,10 @@ export interface PluginConfig {
 }
 
 export const pluginConfig: PluginConfig = {
-	name: 'steam-button-template',
-	title: 'Steam Button Template',
+	name: 'profile-button-config',
+	title: 'Profile Button Config',
 	description: 'A Millennium plugin that adds a button to Steam community profile pages.',
-	logPrefix: '[SteamButton]',
+	logPrefix: '[ProfileButton]',
 
 	label: 'EXAMPLE',
 	accent: '.IO',
@@ -38,7 +38,6 @@ export const SELECTORS = {
 	accent: 'sb-accent',
 } as const;
 
-/** Subset of pluginConfig that can be overridden at runtime from the settings panel. */
 export type ButtonOverrides = Pick<
 	PluginConfig,
 	'label' | 'accent' | 'brandColor' | 'brandColorHover' | 'iconSvg' | 'urlTemplate'
@@ -53,11 +52,6 @@ export const BUTTON_OVERRIDE_KEYS: (keyof ButtonOverrides)[] = [
 	'urlTemplate',
 ];
 
-/**
- * Merge a partial runtime override on top of the static defaults.
- * Pure (no @steambrew imports) so both the webkit and frontend bundles can use it.
- * Only string-valued override keys are applied; everything else comes from pluginConfig.
- */
 export function mergeButtonConfig(overrides?: Partial<ButtonOverrides>): PluginConfig {
 	const out: PluginConfig = { ...pluginConfig };
 	if (overrides) {
