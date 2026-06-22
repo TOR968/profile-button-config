@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { definePlugin, Toggle } from '@steambrew/client';
-import { buildInjectionCode } from './inject';
-import { initSettings, getSettings, saveSettings, InjectionMode } from './services/settings';
+import { buildInjectionCode, toInjectConfig } from './inject';
+import { initSettings, getSettings, saveSettings, getEffectiveConfig, InjectionMode } from './services/settings';
 import { pluginConfig } from '../config/plugin.config';
 
 const PROFILE_URL_PATTERN = /steamcommunity\.com\/(id|profiles)\//;
@@ -52,7 +52,7 @@ async function setupCommunityInjection() {
 	const injectIntoTarget = (targetId: string) => {
 		const { openExternal, injectionMode } = getSettings();
 		if (injectionMode === 'webkit') return Promise.resolve(undefined);
-		return evalInTarget(CDP, targetId, buildInjectionCode(openExternal), { awaitPromise: true });
+		return evalInTarget(CDP, targetId, buildInjectionCode(openExternal, toInjectConfig(getEffectiveConfig())), { awaitPromise: true });
 	};
 
 	reloadOpenProfiles = async () => {

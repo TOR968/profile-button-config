@@ -1,4 +1,4 @@
-import { pluginConfig, PluginConfig } from '../config/plugin.config';
+import { PluginConfig } from '../config/plugin.config';
 
 export interface InjectConfig {
 	label: string;
@@ -90,5 +90,5 @@ export function toInjectConfig(c: PluginConfig): InjectConfig {
 	};
 }
 
-export const buildInjectionCode = (openExternal: boolean) =>
-	`(${injectMain.toString()})(${openExternal === false ? 'false' : 'true'}, 'cdp', ${JSON.stringify(toInjectConfig(pluginConfig))})`;
+export const buildInjectionCode = (openExternal: boolean, injectConfig: InjectConfig) =>
+	`(${injectMain.toString()})(${openExternal === false ? 'false' : 'true'}, 'cdp', ${JSON.stringify(injectConfig)})`;
