@@ -3,6 +3,7 @@ import { definePlugin, Toggle } from '@steambrew/client';
 import { buildInjectionCode, toInjectConfig } from './inject';
 import { initSettings, getSettings, saveSettings, getEffectiveConfig, InjectionMode } from './services/settings';
 import { pluginConfig } from '../config/plugin.config';
+import { ButtonEditor } from './components/ButtonEditor';
 
 const PROFILE_URL_PATTERN = /steamcommunity\.com\/(id|profiles)\//;
 
@@ -172,6 +173,12 @@ const Settings = () => {
 			<div style={{ fontSize: '12px', lineHeight: '1.4', color: '#969696' }}>
 				Opens the link in your system browser instead of Steam's in-app browser. Useful when the target site is behind Cloudflare, which can block the in-app browser. Any open profile pages reload automatically when you change this.
 			</div>
+
+			<ButtonEditor
+				onSaved={() => {
+					void reloadOpenProfiles().then(() => detectActiveInjector().then(setInjector));
+				}}
+			/>
 		</div>
 	);
 };
