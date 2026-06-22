@@ -1,11 +1,12 @@
 import { callable } from '@steambrew/client';
-import { pluginConfig } from '../../config/plugin.config';
+import { pluginConfig, PluginConfig, ButtonOverrides, mergeButtonConfig } from '../../config/plugin.config';
 
 export type InjectionMode = 'auto' | 'webkit' | 'cdp';
 
 export interface PluginSettings {
 	openExternal: boolean;
 	injectionMode: InjectionMode;
+	button?: Partial<ButtonOverrides>;
 }
 
 const DEFAULT_SETTINGS: PluginSettings = {
@@ -33,6 +34,11 @@ export async function initSettings(): Promise<void> {
 
 export function getSettings(): PluginSettings {
 	return cachedSettings;
+}
+
+/** Static defaults with the saved runtime overrides merged on top. */
+export function getEffectiveConfig(): PluginConfig {
+	return mergeButtonConfig(cachedSettings.button);
 }
 
 export async function saveSettings(settings: PluginSettings): Promise<void> {
