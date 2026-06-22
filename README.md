@@ -1,6 +1,6 @@
 # Profile Button Config (Millennium)
 
-A template for [Millennium](https://steambrew.app/) plugins that inject a single button into
+A [Millennium](https://steambrew.app/) plugins that inject a single **customizable** button into
 Steam community profile pages. The button links to a URL built from the viewed profile's
 SteamID64 (e.g. `https://example.com/profile/{steamId64}`).
 
