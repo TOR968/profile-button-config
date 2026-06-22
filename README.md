@@ -12,16 +12,7 @@ SteamID64 (e.g. `https://example.com/profile/{steamId64}`).
 
 ## Example Setup
 
-<video controls width="100%" style="max-width: 640px; border-radius: 8px;">
-  <source src="https://github.com/user-attachments/assets/62aa7a83-a718-478d-8fe9-ca5d7a83f94e" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
-
-[](https://github.com/user-attachments/assets/62aa7a83-a718-478d-8fe9-ca5d7a83f94e)
-
-
-
+https://github.com/user-attachments/assets/62aa7a83-a718-478d-8fe9-ca5d7a83f94e
 
 # 🚀 Installation Guide
 
