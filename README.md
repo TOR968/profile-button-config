@@ -12,7 +12,10 @@ SteamID64 (e.g. `https://example.com/profile/{steamId64}`).
 
 ## Example Setup
 
-<video controls src="video/conf.mp4" title="Title"></video>
+<video controls width="100%" style="max-width: 640px; border-radius: 8px;">
+  <source src="video/conf.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 # 🚀 Installation Guide
 
