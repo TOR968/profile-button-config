@@ -18,7 +18,7 @@ SteamID64 (e.g. `https://example.com/profile/{steamId64}`).
 </video>
 
 
-
+[](https://github.com/user-attachments/assets/62aa7a83-a718-478d-8fe9-ca5d7a83f94e)
 
 
 
