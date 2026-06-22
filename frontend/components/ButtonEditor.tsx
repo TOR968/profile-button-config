@@ -112,8 +112,8 @@ export const ButtonEditor = ({ onSaved }: { onSaved: () => void }) => {
 	const reset = async () => {
 		const defaults = pickButton(pluginConfig);
 		setForm(defaults);
-		setSavedForm(defaults);
 		await saveSettings({ ...getSettings(), button: undefined });
+		setSavedForm(defaults);
 		onSaved();
 	};
 
