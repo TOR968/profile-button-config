@@ -25,7 +25,7 @@
   },
   "type": "module",
   "name": "profile-button-config",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Millennium plugin that adds a button to Steam community profile pages.",
   "main": "./frontend/index.tsx",
   "author": "",

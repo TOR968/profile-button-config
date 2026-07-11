@@ -3,7 +3,7 @@
 	"name": "profile-button-config",
 	"common_name": "Profile Button Config",
 	"description": "A Millennium plugin that adds a button to Steam community profile pages.",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"backendType": "lua",
 	"webkitApiVersion": "2.0.0"
 }

@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/TOR968/profile-button-config/compare/v1.0.0...v1.0.1) (2026-07-11)
+
+
+### Bug Fixes
+
+* address Plugin Database review feedback ([00fc81e](https://github.com/TOR968/profile-button-config/commit/00fc81e97f56a2fee2c02ffc3a2085c432412c1b))
+
 # 1.0.0 (2026-06-22)
 
 
