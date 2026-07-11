@@ -72,16 +72,11 @@ npx tsc -p webkit/tsconfig.json --noEmit
 
 ## How it works
 
-The button is injected by two paths that share the same vanilla-DOM function
-(`injectMain` in [frontend/inject.ts](frontend/inject.ts)):
-
-- **webkit** (primary) — the webkit bundle runs inside the community browser and injects directly.
-- **CDP** (fallback) — the frontend reaches the community browser over the Chrome DevTools
-  Protocol and evaluates the stringified function, for Millennium versions where webkit doesn't
-  reach it.
-
-Both paths read settings from a small Lua backend ([backend/main.lua](backend/main.lua)) and
-de-dup against each other, so only one button ever appears.
+The webkit bundle ([webkit/index.tsx](webkit/index.tsx)) runs inside the Steam community
+browser and injects the button with a small vanilla-DOM function
+(`injectMain` in [webkit/inject.ts](webkit/inject.ts)). Settings are stored by a small Lua
+backend ([backend/main.lua](backend/main.lua)) and edited from the plugin's settings panel
+in the Steam client.
 
 ## Links
 

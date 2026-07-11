@@ -1,17 +1,13 @@
 import { callable } from '@steambrew/client';
 import { pluginConfig, PluginConfig, ButtonOverrides, mergeButtonConfig } from '../../config/plugin.config';
 
-export type InjectionMode = 'auto' | 'webkit' | 'cdp';
-
 export interface PluginSettings {
 	openExternal: boolean;
-	injectionMode: InjectionMode;
 	button?: Partial<ButtonOverrides>;
 }
 
 const DEFAULT_SETTINGS: PluginSettings = {
 	openExternal: pluginConfig.openExternalDefault,
-	injectionMode: 'auto',
 };
 
 const GetSettingsRpc = callable<[], string>('GetSettings');

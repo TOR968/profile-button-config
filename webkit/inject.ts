@@ -10,32 +10,32 @@ export interface InjectConfig {
 	logPrefix: string;
 }
 
-export function injectMain(openExternal: boolean, injector: string, config: InjectConfig) {
+const STEAMID64_BASE = BigInt('76561197960265728');
+
+async function getSteamId() {
+	const win = window as any;
+	const candidates = [win.g_rgProfileData?.steamid64, win.g_rgProfileData?.steamid];
+	for (const v of candidates) {
+		if (typeof v === 'string' && v !== '0' && v.trim()) return v.trim();
+	}
+	const miniId = document.querySelector('[data-miniprofile]')?.getAttribute('data-miniprofile');
+	if (miniId && miniId !== '0') {
+		try { return (STEAMID64_BASE + BigInt(miniId)).toString(); } catch { }
+	}
+	try {
+		const xmlUrl = location.href.replace(/[?#].*/, '').replace(/\/$/, '') + '/?xml=1';
+		const res = await fetch(xmlUrl);
+		const text = await res.text();
+		const dom = new DOMParser().parseFromString(text, 'application/xml');
+		const id = dom.querySelector('steamID64')?.textContent;
+		if (id && id !== '0') return id;
+	} catch { }
+	return null;
+}
+
+export function injectMain(openExternal: boolean, config: InjectConfig) {
 	if (document.querySelector('.steam-button-container')) return;
 	if (!/steamcommunity\.com\/(id|profiles)\//.test(location.href)) return;
-
-	const STEAMID64_BASE = BigInt('76561197960265728');
-
-	async function getSteamId() {
-		const win = window as any;
-		const candidates = [win.g_rgProfileData?.steamid64, win.g_rgProfileData?.steamid];
-		for (const v of candidates) {
-			if (typeof v === 'string' && v !== '0' && v.trim()) return v.trim();
-		}
-		const miniId = document.querySelector('[data-miniprofile]')?.getAttribute('data-miniprofile');
-		if (miniId && miniId !== '0') {
-			try { return (STEAMID64_BASE + BigInt(miniId)).toString(); } catch { }
-		}
-		try {
-			const xmlUrl = location.href.replace(/[?#].*/, '').replace(/\/$/, '') + '/?xml=1';
-			const res = await fetch(xmlUrl);
-			const text = await res.text();
-			const dom = new DOMParser().parseFromString(text, 'application/xml');
-			const id = dom.querySelector('steamID64')?.textContent;
-			if (id && id !== '0') return id;
-		} catch { }
-		return null;
-	}
 
 	async function inject() {
 		const col = document.querySelector('.profile_rightcol');
@@ -43,7 +43,6 @@ export function injectMain(openExternal: boolean, injector: string, config: Inje
 
 		const div = document.createElement('div');
 		div.className = 'account-row steam-button-container';
-		div.setAttribute('data-steam-button-injector', injector || 'unknown');
 		col.insertBefore(div, col.children[1] ?? null);
 
 		const steamId = await getSteamId();
@@ -89,6 +88,3 @@ export function toInjectConfig(c: PluginConfig): InjectConfig {
 		logPrefix: c.logPrefix,
 	};
 }
-
-export const buildInjectionCode = (openExternal: boolean, injectConfig: InjectConfig) =>
-	`(${injectMain.toString()})(${openExternal === false ? 'false' : 'true'}, 'cdp', ${JSON.stringify(injectConfig)})`;

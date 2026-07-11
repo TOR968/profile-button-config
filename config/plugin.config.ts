@@ -30,14 +30,6 @@ export const pluginConfig: PluginConfig = {
 	openExternalDefault: true,
 };
 
-export const SELECTORS = {
-	container: 'steam-button-container',
-	styleId: 'steam-button-style',
-	injectorAttr: 'data-steam-button-injector',
-	button: 'sb-btn',
-	accent: 'sb-accent',
-} as const;
-
 export type ButtonOverrides = Pick<
 	PluginConfig,
 	'label' | 'accent' | 'brandColor' | 'brandColorHover' | 'iconSvg' | 'urlTemplate'
