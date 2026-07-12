@@ -76,6 +76,6 @@ npx tsc -p webkit/tsconfig.json --noEmit
 - [Millennium Framework](https://github.com/SteamClientHomebrew/Millennium)
 - [Steam Client](https://store.steampowered.com/about/)
 
-### Donate
+### Sponsor this project
 
 - [Patreon](https://www.patreon.com/cw/TOR968)
