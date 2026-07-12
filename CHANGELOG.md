@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/TOR968/profile-button-config/compare/v1.0.1...v1.1.0) (2026-07-12)
+
+
+### Features
+
+* support multiple profile buttons with runtime editor ([294043e](https://github.com/TOR968/profile-button-config/commit/294043ef662f102917fd0a403ad2563c5fc60ed4))
+
 ## [1.0.1](https://github.com/TOR968/profile-button-config/compare/v1.0.0...v1.0.1) (2026-07-11)
 
 
