@@ -1,8 +1,9 @@
 # Profile Button Config (Millennium)
 
-A [Millennium](https://steambrew.app/) plugins that inject a single **customizable** button into
-Steam community profile pages. The button links to a URL built from the viewed profile's
-SteamID64 (e.g. `https://example.com/profile/{steamId64}`).
+A [Millennium](https://steambrew.app/) plugin that injects one or more **customizable** buttons into
+Steam community profile pages. Each button links to a URL built from the viewed profile's
+SteamID64 (e.g. `https://example.com/profile/{steamId64}`). Add, edit, reorder, and remove buttons
+at runtime from the plugin's settings panel.
 
 ## Prerequisites
 
@@ -12,7 +13,7 @@ SteamID64 (e.g. `https://example.com/profile/{steamId64}`).
 
 ## Example Setup
 
-https://github.com/user-attachments/assets/62aa7a83-a718-478d-8fe9-ca5d7a83f94e
+https://github.com/user-attachments/assets/72b1b1e6-4e08-4d17-aab5-2b9f87d2b99a
 
 # 🚀 Installation Guide
 
@@ -70,15 +71,11 @@ npx tsc -p frontend/tsconfig.json --noEmit
 npx tsc -p webkit/tsconfig.json --noEmit
 ```
 
-## How it works
-
-The webkit bundle ([webkit/index.tsx](webkit/index.tsx)) runs inside the Steam community
-browser and injects the button with a small vanilla-DOM function
-(`injectMain` in [webkit/inject.ts](webkit/inject.ts)). Settings are stored by a small Lua
-backend ([backend/main.lua](backend/main.lua)) and edited from the plugin's settings panel
-in the Steam client.
-
 ## Links
 
 - [Millennium Framework](https://github.com/SteamClientHomebrew/Millennium)
 - [Steam Client](https://store.steampowered.com/about/)
+
+### Donate
+
+- [Patreon](https://www.patreon.com/cw/TOR968)

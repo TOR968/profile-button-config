@@ -1,30 +1,13 @@
 import { useState, CSSProperties } from 'react';
-import { DialogBodyText, DialogButton, DialogSubHeader, TextField } from '@steambrew/client';
-import { pluginConfig, ButtonOverrides, BUTTON_OVERRIDE_KEYS } from '../../config/plugin.config';
-import { getSettings, saveSettings, getEffectiveConfig } from '../services/settings';
+import { DialogBodyText, DialogButton, DialogSubHeader, Dropdown, Field, TextField, ToggleField } from '@steambrew/client';
+import { pluginConfig, ButtonConfig, BUTTON_KEYS, newButton } from '../../config/plugin.config';
+import { getEffectiveButtons, saveSettings } from '../services/settings';
 
-const pickButton = (c: ButtonOverrides): ButtonOverrides => ({
-	label: c.label,
-	accent: c.accent,
-	brandColor: c.brandColor,
-	brandColorHover: c.brandColorHover,
-	iconSvg: c.iconSvg,
-	urlTemplate: c.urlTemplate,
-});
+const cloneList = (list: ButtonConfig[]): ButtonConfig[] => list.map((b) => ({ ...b }));
+const serialize = (list: ButtonConfig[]): string => JSON.stringify(list.map((b) => BUTTON_KEYS.map((k) => b[k])));
 
-const computeOverride = (form: ButtonOverrides): Partial<ButtonOverrides> | undefined => {
-	const diff: Partial<ButtonOverrides> = {};
-	for (const k of BUTTON_OVERRIDE_KEYS) {
-		if (form[k] !== pluginConfig[k]) diff[k] = form[k];
-	}
-	return Object.keys(diff).length ? diff : undefined;
-};
-
-const sameForm = (a: ButtonOverrides, b: ButtonOverrides): boolean =>
-	BUTTON_OVERRIDE_KEYS.every((k) => a[k] === b[k]);
-
-const ButtonPreview = ({ form }: { form: ButtonOverrides }) => {
-	const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="height:22px;width:auto">${form.iconSvg}</svg>`;
+const ButtonPreview = ({ button }: { button: ButtonConfig }) => {
+	const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="height:22px;width:auto">${button.iconSvg}</svg>`;
 	const btn: CSSProperties = {
 		display: 'flex',
 		gap: '.5rem',
@@ -44,65 +27,123 @@ const ButtonPreview = ({ form }: { form: ButtonOverrides }) => {
 	return (
 		<div style={{ margin: '4px 0 8px' }}>
 			<div style={btn}>
-				<span style={{ display: 'flex', color: form.brandColor }} dangerouslySetInnerHTML={{ __html: svg }} />
-				<span>{form.label}</span>
-				<span style={{ color: form.brandColor }}>{form.accent}</span>
+				<span style={{ display: 'flex', color: button.brandColor }} dangerouslySetInnerHTML={{ __html: svg }} />
+				<span>{button.label}</span>
+				<span style={{ color: button.brandColor }}>{button.accent}</span>
 			</div>
 		</div>
 	);
 };
 
 export const ButtonEditor = () => {
-	const [form, setForm] = useState<ButtonOverrides>(() => pickButton(getEffectiveConfig()));
-	const [savedForm, setSavedForm] = useState<ButtonOverrides>(form);
+	const [buttons, setButtons] = useState<ButtonConfig[]>(() => cloneList(getEffectiveButtons()));
+	const [savedButtons, setSavedButtons] = useState<ButtonConfig[]>(buttons);
+	const [selectedId, setSelectedId] = useState<string>(() => buttons[0]?.id ?? '');
 
-	const set = (k: keyof ButtonOverrides) => (e: React.ChangeEvent<HTMLInputElement>) =>
-		setForm((f) => ({ ...f, [k]: e.target.value }));
-	const dirty = !sameForm(form, savedForm);
-	const urlValid = form.urlTemplate.includes('{steamId64}');
+	const index = buttons.findIndex((b) => b.id === selectedId);
+	const selected = index >= 0 ? buttons[index] : buttons[0];
+	const dirty = serialize(buttons) !== serialize(savedButtons);
+	const atDefaults = serialize(buttons) === serialize(pluginConfig.buttons);
+	const urlValid = !selected || selected.urlTemplate.includes('{steamId64}');
+
+	const patch = (key: keyof ButtonConfig, value: string | boolean) =>
+		setButtons((list) => list.map((b) => (b.id === selected!.id ? { ...b, [key]: value } : b)));
+
+	const setText = (key: keyof ButtonConfig) => (e: React.ChangeEvent<HTMLInputElement>) => patch(key, e.target.value);
+
+	const add = () => {
+		const b = newButton();
+		setButtons((list) => [...list, b]);
+		setSelectedId(b.id);
+	};
+
+	const del = () => {
+		if (!selected) return;
+		const i = buttons.findIndex((b) => b.id === selected.id);
+		const next = buttons.filter((b) => b.id !== selected.id);
+		setButtons(next);
+		setSelectedId(next[Math.max(0, i - 1)]?.id ?? '');
+	};
+
+	const move = (dir: -1 | 1) => {
+		const i = buttons.findIndex((b) => b.id === selected?.id);
+		const j = i + dir;
+		if (i < 0 || j < 0 || j >= buttons.length) return;
+		const next = buttons.slice();
+		[next[i], next[j]] = [next[j], next[i]];
+		setButtons(next);
+	};
 
 	const save = async () => {
-		await saveSettings({ ...getSettings(), button: computeOverride(form) });
-		setSavedForm(form);
+		await saveSettings({ buttons });
+		setSavedButtons(cloneList(buttons));
 	};
 
-	const reset = async () => {
-		const defaults = pickButton(pluginConfig);
-		setForm(defaults);
-		await saveSettings({ ...getSettings(), button: undefined });
-		setSavedForm(defaults);
+	const resetAll = async () => {
+		const defaults = cloneList(pluginConfig.buttons);
+		setButtons(defaults);
+		setSelectedId(defaults[0]?.id ?? '');
+		await saveSettings({});
+		setSavedButtons(cloneList(defaults));
 	};
+
+	const options = buttons.map((b, i) => ({ data: b.id, label: b.label || `Button ${i + 1}` }));
 
 	return (
 		<>
-			<DialogSubHeader>Button appearance</DialogSubHeader>
+			<DialogSubHeader>Profile buttons</DialogSubHeader>
 			<DialogBodyText>
-				Customize the injected button. Changes apply after you press Save; reopen profile pages to see them.
+				Add one or more buttons to inject into Steam profile pages. Press Save to apply; open profile pages update
+				themselves when you switch back to them.
 			</DialogBodyText>
 
-			<ButtonPreview form={form} />
+			<Field label="Edit button" childrenLayout="inline">
+				<Dropdown
+					rgOptions={options}
+					selectedOption={selected?.id ?? ''}
+					strDefaultLabel="No buttons"
+					disabled={buttons.length === 0}
+					onChange={(opt) => setSelectedId(opt.data)}
+				/>
+			</Field>
+			<DialogButton onClick={add}>Add button</DialogButton>
 
-			<TextField label="Label" value={form.label} onChange={set('label')} />
-			<TextField label="Accent" value={form.accent} onChange={set('accent')} />
-			<TextField
-				label="URL template"
-				description={urlValid ? undefined : 'URL template should contain {steamId64} — without it every profile links to the same URL.'}
-				value={form.urlTemplate}
-				onChange={set('urlTemplate')}
-			/>
-			<TextField label="Brand color" value={form.brandColor} onChange={set('brandColor')} />
-			<TextField label="Brand color (hover)" value={form.brandColorHover} onChange={set('brandColorHover')} />
-			<TextField
-				label="Icon SVG"
-				description="Inner markup of a 0 0 24 24 SVG; use currentColor so brand colors apply."
-				value={form.iconSvg}
-				onChange={set('iconSvg')}
-			/>
+			{selected && (
+				<>
+					<ButtonPreview button={selected} />
+
+					<TextField label="Label" value={selected.label} onChange={setText('label')} />
+					<TextField label="Accent" value={selected.accent} onChange={setText('accent')} />
+					<TextField
+						label="URL template"
+						description={urlValid ? undefined : 'URL template should contain {steamId64} — without it every profile links to the same URL.'}
+						value={selected.urlTemplate}
+						onChange={setText('urlTemplate')}
+					/>
+					<TextField label="Brand color" value={selected.brandColor} onChange={setText('brandColor')} />
+					<TextField label="Brand color (hover)" value={selected.brandColorHover} onChange={setText('brandColorHover')} />
+					<TextField
+						label="Icon SVG"
+						description="Inner markup of a 0 0 24 24 SVG; use currentColor so brand colors apply."
+						value={selected.iconSvg}
+						onChange={setText('iconSvg')}
+					/>
+					<ToggleField
+						label="Open in external browser"
+						checked={selected.openExternal}
+						onChange={(checked: boolean) => patch('openExternal', checked)}
+					/>
+
+					<DialogButton disabled={index <= 0} onClick={() => move(-1)}>Move up</DialogButton>
+					<DialogButton disabled={index < 0 || index >= buttons.length - 1} onClick={() => move(1)}>Move down</DialogButton>
+					<DialogButton onClick={del}>Delete button</DialogButton>
+				</>
+			)}
 
 			<DialogButton disabled={!dirty} onClick={() => void save()}>
 				{dirty ? 'Save' : 'Saved'}
 			</DialogButton>
-			<DialogButton onClick={() => void reset()}>Reset to defaults</DialogButton>
+			<DialogButton disabled={atDefaults} onClick={() => void resetAll()}>Reset to defaults</DialogButton>
 		</>
 	);
 };

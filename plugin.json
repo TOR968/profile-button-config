@@ -2,7 +2,7 @@
 	"$schema": "https://raw.githubusercontent.com/SteamClientHomebrew/Millennium/main/src/sys/plugin-schema.json",
 	"name": "profile-button-config",
 	"common_name": "Profile Button Config",
-	"description": "A Millennium plugin that adds a button to Steam community profile pages.",
+	"description": "A Millennium plugin that adds buttons to Steam community profile pages.",
 	"version": "1.0.1",
 	"backendType": "lua",
 	"webkitApiVersion": "2.0.0"

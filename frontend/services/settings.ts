@@ -1,19 +1,14 @@
 import { callable } from '@steambrew/client';
-import { pluginConfig, PluginConfig, ButtonOverrides, mergeButtonConfig } from '../../config/plugin.config';
+import { pluginConfig, ButtonConfig, effectiveButtons } from '../../config/plugin.config';
 
 export interface PluginSettings {
-	openExternal: boolean;
-	button?: Partial<ButtonOverrides>;
+	buttons?: ButtonConfig[];
 }
-
-const DEFAULT_SETTINGS: PluginSettings = {
-	openExternal: pluginConfig.openExternalDefault,
-};
 
 const GetSettingsRpc = callable<[], string>('GetSettings');
 const SaveSettingsRpc = callable<[{ settings_json: string }], string>('SaveSettings');
 
-let cachedSettings: PluginSettings = { ...DEFAULT_SETTINGS };
+let cachedSettings: PluginSettings = {};
 
 export async function initSettings(): Promise<void> {
 	try {
@@ -21,7 +16,7 @@ export async function initSettings(): Promise<void> {
 		if (!raw) return;
 		const parsed = JSON.parse(raw);
 		if (parsed && typeof parsed === 'object') {
-			cachedSettings = { ...DEFAULT_SETTINGS, ...parsed };
+			cachedSettings = { buttons: effectiveButtons(parsed) };
 		}
 	} catch (e) {
 		console.error(pluginConfig.logPrefix + ' Failed to load settings:', e);
@@ -32,9 +27,8 @@ export function getSettings(): PluginSettings {
 	return cachedSettings;
 }
 
-/** Static defaults with the saved runtime overrides merged on top. */
-export function getEffectiveConfig(): PluginConfig {
-	return mergeButtonConfig(cachedSettings.button);
+export function getEffectiveButtons(): ButtonConfig[] {
+	return effectiveButtons(cachedSettings);
 }
 
 export async function saveSettings(settings: PluginSettings): Promise<void> {
