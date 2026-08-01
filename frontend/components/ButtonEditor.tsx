@@ -1,13 +1,15 @@
 import { useState, CSSProperties } from 'react';
 import { DialogBodyText, DialogButton, DialogSubHeader, Dropdown, Field, TextField, ToggleField } from '@steambrew/client';
 import { pluginConfig, ButtonConfig, BUTTON_KEYS, newButton } from '../../config/plugin.config';
+import { buildIconSvg, safeTargetUrl } from '../../config/sanitize';
 import { getEffectiveButtons, saveSettings } from '../services/settings';
 
 const cloneList = (list: ButtonConfig[]): ButtonConfig[] => list.map((b) => ({ ...b }));
 const serialize = (list: ButtonConfig[]): string => JSON.stringify(list.map((b) => BUTTON_KEYS.map((k) => b[k])));
 
 const ButtonPreview = ({ button }: { button: ButtonConfig }) => {
-	const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="height:22px;width:auto">${button.iconSvg}</svg>`;
+	const icon = buildIconSvg(button.iconSvg);
+	icon.setAttribute('style', 'height:22px;width:auto');
 	const btn: CSSProperties = {
 		display: 'flex',
 		gap: '.5rem',
@@ -27,7 +29,7 @@ const ButtonPreview = ({ button }: { button: ButtonConfig }) => {
 	return (
 		<div style={{ margin: '4px 0 8px' }}>
 			<div style={btn}>
-				<span style={{ display: 'flex', color: button.brandColor }} dangerouslySetInnerHTML={{ __html: svg }} />
+				<span style={{ display: 'flex', color: button.brandColor }} dangerouslySetInnerHTML={{ __html: icon.outerHTML }} />
 				<span>{button.label}</span>
 				<span style={{ color: button.brandColor }}>{button.accent}</span>
 			</div>
@@ -44,7 +46,8 @@ export const ButtonEditor = () => {
 	const selected = index >= 0 ? buttons[index] : buttons[0];
 	const dirty = serialize(buttons) !== serialize(savedButtons);
 	const atDefaults = serialize(buttons) === serialize(pluginConfig.buttons);
-	const urlValid = !selected || selected.urlTemplate.includes('{steamId64}');
+	const urlHasToken = !selected || selected.urlTemplate.includes('{steamId64}');
+	const urlSupported = !selected || safeTargetUrl(selected.urlTemplate, '76561197960265728') !== null;
 
 	const patch = (key: keyof ButtonConfig, value: string | boolean) =>
 		setButtons((list) => list.map((b) => (b.id === selected!.id ? { ...b, [key]: value } : b)));
@@ -75,16 +78,18 @@ export const ButtonEditor = () => {
 	};
 
 	const save = async () => {
-		await saveSettings({ buttons });
-		setSavedButtons(cloneList(buttons));
+		if (!(await saveSettings({ buttons }))) return;
+		const effective = cloneList(getEffectiveButtons());
+		setButtons(effective);
+		setSavedButtons(effective);
 	};
 
 	const resetAll = async () => {
-		const defaults = cloneList(pluginConfig.buttons);
-		setButtons(defaults);
-		setSelectedId(defaults[0]?.id ?? '');
-		await saveSettings({});
-		setSavedButtons(cloneList(defaults));
+		if (!(await saveSettings({}))) return;
+		const effective = cloneList(getEffectiveButtons());
+		setButtons(effective);
+		setSelectedId(effective[0]?.id ?? '');
+		setSavedButtons(effective);
 	};
 
 	const options = buttons.map((b, i) => ({ data: b.id, label: b.label || `Button ${i + 1}` }));
@@ -116,7 +121,13 @@ export const ButtonEditor = () => {
 					<TextField label="Accent" value={selected.accent} onChange={setText('accent')} />
 					<TextField
 						label="URL template"
-						description={urlValid ? undefined : 'URL template should contain {steamId64} — without it every profile links to the same URL.'}
+						description={
+							!urlSupported
+								? 'Only http:// and https:// URLs are supported — this button will be skipped.'
+								: urlHasToken
+									? undefined
+									: 'URL template should contain {steamId64} — without it every profile links to the same URL.'
+						}
 						value={selected.urlTemplate}
 						onChange={setText('urlTemplate')}
 					/>

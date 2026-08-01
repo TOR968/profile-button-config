@@ -1,28 +1,40 @@
 import { ButtonConfig } from '../config/plugin.config';
+import { buildIconSvg, safeTargetUrl } from '../config/sanitize';
 
 const STEAMID64_BASE = BigInt('76561197960265728');
+const STEAMID64_PATTERN = /^\d{17}$/;
+const PROFILE_HOST_PATTERN = /(^|\.)steamcommunity\.com$/;
+const PROFILE_PATH_PATTERN = /^\/(id|profiles)\//;
 
 let steamId: string | null = null;
 let container: HTMLDivElement | null = null;
 let logPrefix = '';
 
+function asSteamId64(value: unknown): string | null {
+	const id = typeof value === 'string' ? value.trim() : '';
+	return STEAMID64_PATTERN.test(id) ? id : null;
+}
+
 async function getSteamId() {
 	const win = window as any;
 	const candidates = [win.g_rgProfileData?.steamid64, win.g_rgProfileData?.steamid];
 	for (const v of candidates) {
-		if (typeof v === 'string' && v !== '0' && v.trim()) return v.trim();
+		const id = asSteamId64(v);
+		if (id) return id;
 	}
 	const miniId = document.querySelector('[data-miniprofile]')?.getAttribute('data-miniprofile');
-	if (miniId && miniId !== '0') {
-		try { return (STEAMID64_BASE + BigInt(miniId)).toString(); } catch { }
+	if (miniId && /^\d+$/.test(miniId) && miniId !== '0') {
+		try {
+			const id = asSteamId64((STEAMID64_BASE + BigInt(miniId)).toString());
+			if (id) return id;
+		} catch { }
 	}
 	try {
 		const xmlUrl = location.href.replace(/[?#].*/, '').replace(/\/$/, '') + '/?xml=1';
 		const res = await fetch(xmlUrl);
 		const text = await res.text();
 		const dom = new DOMParser().parseFromString(text, 'application/xml');
-		const id = dom.querySelector('steamID64')?.textContent;
-		if (id && id !== '0') return id;
+		return asSteamId64(dom.querySelector('steamID64')?.textContent);
 	} catch { }
 	return null;
 }
@@ -35,14 +47,23 @@ function ensureStyle() {
 	document.head?.appendChild(s);
 }
 
-function buildButton(button: ButtonConfig, id: string): HTMLAnchorElement {
-	const targetUrl = button.urlTemplate.replace('{steamId64}', id);
+function buildButton(button: ButtonConfig, id: string): HTMLAnchorElement | null {
+	const targetUrl = safeTargetUrl(button.urlTemplate, id);
+	if (!targetUrl) {
+		console.warn(logPrefix + ' Skipped button with unsupported URL template: ' + button.urlTemplate);
+		return null;
+	}
 	const a = document.createElement('a');
 	a.href = button.openExternal ? 'steam://openurl_external/' + targetUrl : targetUrl;
 	a.className = 'sb-btn';
 	a.style.setProperty('--sb-brand', button.brandColor);
 	a.style.setProperty('--sb-brand-hover', button.brandColorHover);
-	a.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' + button.iconSvg + '</svg>' + button.label + '<span class="sb-accent">' + button.accent + '</span>';
+	a.appendChild(buildIconSvg(button.iconSvg));
+	a.appendChild(document.createTextNode(button.label));
+	const accent = document.createElement('span');
+	accent.className = 'sb-accent';
+	accent.textContent = button.accent;
+	a.appendChild(accent);
 	return a;
 }
 
@@ -93,13 +114,15 @@ function render(buttons: ButtonConfig[]) {
 	if (!container || !steamId) return;
 	container.textContent = '';
 	for (const button of buttons) {
-		container.appendChild(buildButton(button, steamId));
+		const anchor = buildButton(button, steamId);
+		if (anchor) container.appendChild(anchor);
 	}
 }
 
 export async function injectMain(buttons: ButtonConfig[], prefix: string) {
 	logPrefix = prefix;
-	if (!/steamcommunity\.com\/(id|profiles)\//.test(location.href)) return;
+	if (!PROFILE_HOST_PATTERN.test(location.hostname)) return;
+	if (!PROFILE_PATH_PATTERN.test(location.pathname)) return;
 	if (buttons.length && !(await ensureContainer())) return;
 	render(buttons);
 }

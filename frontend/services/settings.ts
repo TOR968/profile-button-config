@@ -31,7 +31,7 @@ export function getEffectiveButtons(): ButtonConfig[] {
 	return effectiveButtons(cachedSettings);
 }
 
-export async function saveSettings(settings: PluginSettings): Promise<void> {
+export async function saveSettings(settings: PluginSettings): Promise<boolean> {
 	const previous = cachedSettings;
 	cachedSettings = settings;
 	try {
@@ -39,9 +39,12 @@ export async function saveSettings(settings: PluginSettings): Promise<void> {
 		if (res === '0') {
 			console.error(pluginConfig.logPrefix + ' Backend failed to save settings');
 			cachedSettings = previous;
+			return false;
 		}
+		return true;
 	} catch (e) {
 		console.error(pluginConfig.logPrefix + ' Failed to save settings:', e);
 		cachedSettings = previous;
+		return false;
 	}
 }

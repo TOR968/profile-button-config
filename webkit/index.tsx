@@ -2,7 +2,10 @@ import { callable } from '@steambrew/webkit';
 import { injectMain } from './inject';
 import { pluginConfig, ButtonConfig, effectiveButtons } from '../config/plugin.config';
 
-const PROFILE_URL_PATTERN = /steamcommunity\.com\/(id|profiles)\//;
+const PROFILE_HOST_PATTERN = /(^|\.)steamcommunity\.com$/;
+const PROFILE_PATH_PATTERN = /^\/(id|profiles)\//;
+
+const REFRESH_HANDLER_KEY = '__profileButtonConfigRefresh';
 
 const GetSettingsRpc = callable<[], string>('GetSettings');
 
@@ -17,7 +20,8 @@ async function readButtons(): Promise<ButtonConfig[]> {
 }
 
 export default async function WebkitMain() {
-	if (!PROFILE_URL_PATTERN.test(location.href)) return;
+	if (!PROFILE_HOST_PATTERN.test(location.hostname)) return;
+	if (!PROFILE_PATH_PATTERN.test(location.pathname)) return;
 
 	let applied = '';
 	let running = false;
@@ -41,6 +45,13 @@ export default async function WebkitMain() {
 	const refresh = () => {
 		if (document.visibilityState === 'visible') void apply();
 	};
+
+	const scope = window as any;
+	if (scope[REFRESH_HANDLER_KEY]) {
+		document.removeEventListener('visibilitychange', scope[REFRESH_HANDLER_KEY]);
+		window.removeEventListener('focus', scope[REFRESH_HANDLER_KEY]);
+	}
+	scope[REFRESH_HANDLER_KEY] = refresh;
 	document.addEventListener('visibilitychange', refresh);
 	window.addEventListener('focus', refresh);
 }
