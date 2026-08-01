@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/TOR968/profile-button-config/compare/v1.1.0...v1.1.1) (2026-08-01)
+
+
+### Bug Fixes
+
+* sanitize user-configurable button markup and harden profile injection ([622f019](https://github.com/TOR968/profile-button-config/commit/622f0193fe4e0be3494209b184875b7b109e5892))
+
 # [1.1.0](https://github.com/TOR968/profile-button-config/compare/v1.0.1...v1.1.0) (2026-07-12)
 
 
